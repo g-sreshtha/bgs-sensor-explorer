@@ -19,6 +19,24 @@ export interface Feature {
   };
 }
 
+export interface Datastream {
+  "@iot.id": number;
+  name: string;
+  description?: string;
+  unitOfMeasurement?: {
+    name: string;
+    symbol: string;
+    definition: string;
+  };
+}
+
+export interface Observation {
+  '@iot.id': number;
+  result: number;
+  phenomenonTime: string;
+  resultTime: string;
+}
+
 export async function getData<T>(url: string): Promise<T> {
   try {
     const response = await fetch(url);
@@ -38,6 +56,12 @@ export async function getData<T>(url: string): Promise<T> {
 export async function getListOfFeatures(): Promise<Feature[]> {
   const URL = `${BASE_URL}/FeaturesOfInterest?$count=false`;
   const data = await getData<{ value: Feature[] }>(URL);
+  return data.value;
+}
+
+export async function getDatastreamsForFeature(entityId: number): Promise<Datastream[]> {
+  const URL = `${BASE_URL}/FeaturesOfInterest${entityId})/Datastreams`;
+  const data = await getData<{ value: Datastream[] }>(URL);
   return data.value;
 }
 

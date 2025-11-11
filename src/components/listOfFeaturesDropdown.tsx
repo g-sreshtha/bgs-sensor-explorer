@@ -1,33 +1,44 @@
-import React, { useState } from "react";
-import ButtonDropdown from "@cloudscape-design/components/button-dropdown";
+import React from "react";
 import type { Feature } from "../api";
+import { Select } from "@cloudscape-design/components";
 
-interface ListOfFeaturesProps {
+interface Props {
   items: Feature[];
-  // onSelect?: (featureId: number) => void; // optional callback
+  selectedFeature?: number;
+  onSelect: (featureId: number | undefined) => void;
+  loading?: boolean;
 }
 
-export const ListOfFeatures: React.FC<ListOfFeaturesProps> = ({ items }) => {
-  const [selected, setSelected] = useState<Feature | null>(null);
 
-  const handleSelect = (item: Feature) => {
-    setSelected(item);
-    // if you add onSelect prop:
-    // onSelect?.(item["@iot.id"]);
-  };
+export const ListOfFeatures: React.FC<Props> = ({ 
+  items, 
+  selectedFeature, 
+  onSelect,
+  loading 
+}) => {
 
-  return (
-    <ButtonDropdown
-      items={items.map((f) => ({
-        id: f["@iot.id"].toString(),
-        text: f.name,
-      }))}
-      onItemClick={({ detail }) => {
-        const feature = items.find(f => f["@iot.id"].toString() === detail.id);
-        if (feature) handleSelect(feature);
+    const options = items.map(feature => ({
+    label: feature.name,
+    value: String(feature['@iot.id']),
+    description: feature.description
+  }));
+
+  const selectedOption = selectedFeature 
+    ? options.find(opt => opt.value === String(selectedFeature))
+    : null;;
+
+    return (
+    <Select
+      selectedOption={selectedOption || null}
+      onChange={({ detail }) => {
+        onSelect(detail.selectedOption ? Number(detail.selectedOption.value) : undefined);
       }}
-    >
-      {selected ? selected.name : "Select a feature"}
-    </ButtonDropdown>
+      options={options}
+      placeholder="Select a Feature of Interest"
+      loadingText="Loading features..."
+      statusType={loading ? "loading" : "finished"}
+      disabled={loading}
+      filteringType="auto"
+    />
   );
 };
