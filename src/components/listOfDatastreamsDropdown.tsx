@@ -18,7 +18,6 @@ export const DataStreamDropdown: React.FC<Props> = ({
   const options = items.map(datastream => ({
     label: datastream.name,
     value: String(datastream["@iot.id"]),
-    description: datastream.unitOfMeasurement ? `Unit: ${datastream.unitOfMeasurement}` : undefined
   }));
 
   const selectedOption = selectedDatastream 

@@ -110,6 +110,11 @@ useEffect(() => {
       </Header>
       }
       />
+      {selectedFeature && !loadingDatastreams && datastreams.length === 0 && (
+                <Alert type="warning" header="No datastreams available">
+                  This feature of interest does not have any associated datastreams.
+                </Alert>
+              )}
       <div className="DropdownContainer"> 
       <div>
         <Box variant="awsui-key-label" margin={{ bottom: 'xs' }}>
@@ -122,11 +127,7 @@ useEffect(() => {
           loading={loadingFeatures}
         />
       </div>
-        {selectedFeature && !loadingDatastreams && datastreams.length === 0 && (
-                <Alert type="warning" header="No datastreams available">
-                  This feature of interest does not have any associated datastreams.
-                </Alert>
-              )}
+    
       {selectedFeature && datastreams.length > 0 && (
         <div>
           <Box variant="awsui-key-label" margin={{ bottom: 'xs' }}>
