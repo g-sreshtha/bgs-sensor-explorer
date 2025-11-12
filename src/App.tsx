@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { getDatastreamsForFeature, getListOfFeatures, getObservationsForDatastream, type Datastream, type Feature, type Observation } from './api';
 import { ListOfFeatures } from './components/listOfFeaturesDropdown';
-import { Container, Header, SpaceBetween, Box } from '@cloudscape-design/components';
+import { Container, Header, SpaceBetween, Box, Alert } from '@cloudscape-design/components';
 import { DataStreamDropdown } from './components/listOfDatastreamsDropdown';
 import StatisticsDisplay from './components/statisticsDisplay';
 import ObservationsChart from './components/observationsChart';
+import './App.css'
 
 function App() {
   const [features, setFeatures] = useState<Feature[]>([]);
@@ -56,6 +57,7 @@ useEffect(() => {
         setLoadingDatastreams(false);
       }
     };
+
     fetchDatastreams();
   }, [selectedFeature]);
 
@@ -91,9 +93,14 @@ useEffect(() => {
 
   const selectedDatastreamInfo = datastreams.find(ds => ds['@iot.id'] === selectedDatastream);
 
+  if(datastreams.values.length === 0){
+    <Box> This feature of interest does not have any associated datastreams</Box>
+  }
 
 
   return (
+    <>
+    <div className='container'>
     <SpaceBetween size="l">
       <Container header={<Header
         variant="h1"
@@ -102,21 +109,38 @@ useEffect(() => {
         British Geological Survey Sensors Plotter
       </Header>
       }
-      ></Container>
-      <ListOfFeatures
-        items={features}
-        selectedFeature={selectedFeature}
-        onSelect={setSelectedFeature}
-        loading={loadingFeatures}
       />
-      {selectedFeature && (
-        <DataStreamDropdown
-          items={datastreams}
-          selectedDatastream={selectedDatastream}
-          onSelect={setSelectedDatastream}
-          loading={loadingDatastreams}
+      <div className="DropdownContainer"> 
+      <div>
+        <Box variant="awsui-key-label" margin={{ bottom: 'xs' }}>
+          1. Select Feature of Interest
+        </Box>
+        <ListOfFeatures
+          items={features}
+          selectedFeature={selectedFeature}
+          onSelect={setSelectedFeature}
+          loading={loadingFeatures}
         />
+      </div>
+        {selectedFeature && !loadingDatastreams && datastreams.length === 0 && (
+                <Alert type="warning" header="No datastreams available">
+                  This feature of interest does not have any associated datastreams.
+                </Alert>
+              )}
+      {selectedFeature && datastreams.length > 0 && (
+        <div>
+          <Box variant="awsui-key-label" margin={{ bottom: 'xs' }}>
+            2. Select a Datastream
+          </Box>
+          <DataStreamDropdown
+            items={datastreams}
+            selectedDatastream={selectedDatastream}
+            onSelect={setSelectedDatastream}
+            loading={loadingDatastreams}
+          />
+        </div>
       )}
+    </div>
       {loadingObservations && (
         <Container>
           Loading observations...
@@ -144,6 +168,8 @@ useEffect(() => {
         />
       )}
     </SpaceBetween>
+    </div>
+    </>
   )
 }
 
