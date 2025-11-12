@@ -32,7 +32,7 @@ export interface Datastream {
 
 export interface Observation {
   '@iot.id': number;
-  result: number;
+  result: number | object;
   phenomenonTime: string;
   resultTime: string;
 }

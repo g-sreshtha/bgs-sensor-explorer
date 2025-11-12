@@ -1,4 +1,4 @@
-import { Container, Header, LineChart } from "@cloudscape-design/components";
+import { Container, Header, LineChart, Box } from "@cloudscape-design/components";
 import type { Observation } from "../api";
 
 interface ObservationsChartProps {
@@ -8,15 +8,31 @@ interface ObservationsChartProps {
 }
 
 export default function ObservationsChart({ observations, datastreamName, unit }: ObservationsChartProps) {
+  
+  const numericObservations = observations.filter(obs => 
+    typeof obs.result === 'number' && !isNaN(obs.result)
+  );
 
-  const sortedObservations = [...observations].sort((a, b) =>
+  if (numericObservations.length === 0) {
+    return (
+      <Container header={<Header variant="h2">Observations over Time</Header>}>
+        <Box textAlign="center" padding="l" color="text-body-secondary">
+          No numeric observations available for this datastream.
+        </Box>
+      </Container>
+    );
+  }
+
+  const sortedObservations = [...numericObservations].sort((a, b) =>
     new Date(a.phenomenonTime).getTime() - new Date(b.phenomenonTime).getTime()
   );
 
   const chartData = sortedObservations.map(obs => ({
     x: new Date(obs.phenomenonTime),
-    y: obs.result
+    y: obs.result as number
   }));
+
+  const numericValues = numericObservations.map(obs => obs.result as number);
 
   return (
     <Container header={<Header variant="h2">Observations over Time</Header>}>
@@ -30,8 +46,8 @@ export default function ObservationsChart({ observations, datastreamName, unit }
         ]}
         xDomain={[chartData[0]?.x, chartData[chartData.length - 1]?.x]}
         yDomain={[
-          Math.min(...observations.map(obs => obs.result)) * 0.95,
-          Math.max(...observations.map(obs => obs.result)) * 1.05
+          Math.min(...numericValues) * 0.95,
+          Math.max(...numericValues) * 1.05
         ]}
         i18nStrings={{
           xTickFormatter: (value) => {

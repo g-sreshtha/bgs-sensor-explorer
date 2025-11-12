@@ -84,12 +84,22 @@ function App() {
   }, [selectedDatastream]);
 
 
-  const statistics = observations.length > 0 ? {
-    count: observations.length,
-    min: Math.min(...observations.map(obs => obs.result)),
-    max: Math.max(...observations.map(obs => obs.result)),
-    mean: observations.reduce((sum, obs) => sum + obs.result, 0) / observations.length
-  } : null;
+const statistics = observations.length > 0 ? (() => {
+  const numericObservations = observations.filter(obs => 
+    typeof obs.result === 'number' && !isNaN(obs.result)
+  );
+  
+  if (numericObservations.length === 0) {
+    return null;
+  }
+  
+  return {
+    count: numericObservations.length,
+    min: Math.min(...numericObservations.map(obs => obs.result as number)),
+    max: Math.max(...numericObservations.map(obs => obs.result as number)),
+    mean: numericObservations.reduce((sum, obs) => sum + (obs.result as number), 0) / numericObservations.length
+  };
+})() : null;
 
   const selectedDatastreamInfo = datastreams.find(ds => ds['@iot.id'] === selectedDatastream);
 
