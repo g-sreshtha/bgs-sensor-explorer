@@ -8,6 +8,7 @@ interface ObservationsChartProps {
 }
 
 export default function ObservationsChart({ observations, datastreamName, unit }: ObservationsChartProps) {
+
   const sortedObservations = [...observations].sort((a, b) =>
     new Date(a.phenomenonTime).getTime() - new Date(b.phenomenonTime).getTime()
   );
@@ -18,7 +19,7 @@ export default function ObservationsChart({ observations, datastreamName, unit }
   }));
 
   return (
-    <Container header={<Header variant="h2">Time Series Data</Header>}>
+    <Container header={<Header variant="h2">Observations over Time</Header>}>
       <LineChart
         series={[
           {
@@ -46,10 +47,12 @@ export default function ObservationsChart({ observations, datastreamName, unit }
           yTickFormatter: (value) => `${value.toFixed(2)}${unit ? ` ${unit}` : ''}`
         }}
         ariaLabel="Sensor observations over time"
-        height={300}
+        height={260}
         xScaleType="time"
         yTitle={`Value${unit ? ` (${unit})` : ''}`}
         xTitle="Time"
+        hideLegend={true}
+        hideFilter={true}
         empty={
           <div>No data available</div>
         }

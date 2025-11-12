@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cloudscape-design/chat-components": "^1.0.74",
     "@cloudscape-design/components": "^3.0.1128",
     "@cloudscape-design/global-styles": "^1.0.47",
     "react": "^19.1.1",

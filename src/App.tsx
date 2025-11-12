@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { getDatastreamsForFeature, getListOfFeatures, getObservationsForDatastream, type Datastream, type Feature, type Observation } from './api';
 import { ListOfFeatures } from './components/listOfFeaturesDropdown';
-import { Container, Header, SpaceBetween, Box, Alert } from '@cloudscape-design/components';
+import { Container, Header, SpaceBetween, Box, Alert, StatusIndicator, LiveRegion } from '@cloudscape-design/components';
 import { DataStreamDropdown } from './components/listOfDatastreamsDropdown';
 import StatisticsDisplay from './components/statisticsDisplay';
 import ObservationsChart from './components/observationsChart';
 import './App.css'
+import { LoadingBar } from '@cloudscape-design/chat-components';
 
 function App() {
   const [features, setFeatures] = useState<Feature[]>([]);
@@ -19,7 +20,7 @@ function App() {
   const [loadingObservations, setLoadingObservations] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchFeatures = async () => {
       try {
         setLoadingFeatures(true);
@@ -34,7 +35,6 @@ useEffect(() => {
     };
     fetchFeatures();
   }, []);
-
 
   useEffect(() => {
     if (!selectedFeature) {
@@ -83,7 +83,7 @@ useEffect(() => {
     fetchObservations();
   }, [selectedDatastream]);
 
-  // Calculate statistics
+
   const statistics = observations.length > 0 ? {
     count: observations.length,
     min: Math.min(...observations.map(obs => obs.result)),
@@ -93,83 +93,101 @@ useEffect(() => {
 
   const selectedDatastreamInfo = datastreams.find(ds => ds['@iot.id'] === selectedDatastream);
 
-  if(datastreams.values.length === 0){
-    <Box> This feature of interest does not have any associated datastreams</Box>
-  }
-
-
   return (
     <>
-    <div className='container'>
-    <SpaceBetween size="l">
-      <Container header={<Header
-        variant="h1"
-        description="Explore British Geological Survey Features of Interest and their sensor data."
-      >
-        British Geological Survey Sensors Plotter
-      </Header>
-      }
-      />
-      {selectedFeature && !loadingDatastreams && datastreams.length === 0 && (
-                <Alert type="warning" header="No datastreams available">
-                  This feature of interest does not have any associated datastreams.
-                </Alert>
-              )}
-      <div className="DropdownContainer"> 
-      <div>
-        <Box variant="awsui-key-label" margin={{ bottom: 'xs' }}>
-          1. Select Feature of Interest
-        </Box>
-        <ListOfFeatures
-          items={features}
-          selectedFeature={selectedFeature}
-          onSelect={setSelectedFeature}
-          loading={loadingFeatures}
-        />
-      </div>
-    
-      {selectedFeature && datastreams.length > 0 && (
-        <div>
-          <Box variant="awsui-key-label" margin={{ bottom: 'xs' }}>
-            2. Select a Datastream
-          </Box>
-          <DataStreamDropdown
-            items={datastreams}
-            selectedDatastream={selectedDatastream}
-            onSelect={setSelectedDatastream}
-            loading={loadingDatastreams}
+      <div className='container'>
+        <SpaceBetween size="l">
+          <Container header={<Header
+            variant="h1"
+            description="Explore British Geological Survey Features of Interest and their sensor data."
+          >
+            British Geological Survey Sensors Plotter
+          </Header>
+          }
           />
-        </div>
-      )}
-    </div>
-      {loadingObservations && (
-        <Container>
-          Loading observations...
-        </Container>
-      )}
-      {error && (
-        <Container>
-          <Box color="text-status-error">{error}</Box>
-        </Container>
-      )}
-      {statistics && selectedDatastreamInfo && (
-        <StatisticsDisplay
-          count={statistics.count}
-          min={statistics.min}
-          max={statistics.max}
-          mean={statistics.mean}
-          unit={selectedDatastreamInfo.unitOfMeasurement?.symbol}
-        />
-      )}
-      {observations.length > 0 && selectedDatastreamInfo && (
-        <ObservationsChart
-          observations={observations}
-          datastreamName={selectedDatastreamInfo.name}
-          unit={selectedDatastreamInfo.unitOfMeasurement?.symbol}
-        />
-      )}
-    </SpaceBetween>
-    </div>
+          
+          {selectedFeature && !loadingDatastreams && datastreams.length === 0 && (
+            <Alert type="warning" header="No datastreams available">
+              This feature of interest does not have any associated datastreams.
+            </Alert>
+          )}
+          
+          <div className="DropdownContainer"> 
+            <div>
+              <Box variant="awsui-key-label" margin={{ bottom: 'xs' }}>
+                1. Select Feature of Interest
+              </Box>
+              <ListOfFeatures
+                items={features}
+                selectedFeature={selectedFeature}
+                onSelect={setSelectedFeature}
+                loading={loadingFeatures}
+              />
+            </div>
+          
+            {selectedFeature && (
+              <div>
+                {loadingDatastreams ? (
+                <LiveRegion>
+                    <Box
+                      margin={{ bottom: "xs", left: "l" }}
+                      color="text-body-secondary"
+                    >
+                      Loading datastreams...
+                    </Box>
+                    <LoadingBar variant="gen-ai" />
+                  </LiveRegion>
+                ) : datastreams.length > 0 ? (
+                  <>
+                  <Box variant="awsui-key-label" margin={{ bottom: 'xs' }}>
+                    2. Select a Datastream
+                  </Box>
+                  <DataStreamDropdown
+                    items={datastreams}
+                    selectedDatastream={selectedDatastream}
+                    onSelect={setSelectedDatastream}
+                    loading={loadingDatastreams}
+                  /></>
+                ) : null}
+              </div>
+            )}
+          </div>
+          
+          {loadingObservations && (
+            <Container>
+              <Box textAlign="center" padding="l">
+                <StatusIndicator type="loading">
+                  Loading observations...
+                </StatusIndicator>
+              </Box>
+            </Container>
+          )}
+          
+          {error && (
+            <Container>
+              <Box color="text-status-error">{error}</Box>
+            </Container>
+          )}
+          
+          {statistics && selectedDatastreamInfo && (
+            <StatisticsDisplay
+              count={statistics.count}
+              min={statistics.min}
+              max={statistics.max}
+              mean={statistics.mean}
+              unit={selectedDatastreamInfo.unitOfMeasurement?.symbol}
+            />
+          )}
+          
+          {observations.length > 0 && selectedDatastreamInfo && (
+            <ObservationsChart
+              observations={observations}
+              datastreamName={selectedDatastreamInfo.name}
+              unit={selectedDatastreamInfo.unitOfMeasurement?.symbol}
+            />
+          )}
+        </SpaceBetween>
+      </div>
     </>
   )
 }
