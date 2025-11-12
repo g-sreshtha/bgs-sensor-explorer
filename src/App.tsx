@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { getDatastreamsForFeature, getListOfFeatures, type Datastream, type Feature } from './api';
+import { getDatastreamsForFeature, getListOfFeatures, type Datastream, type Feature, type Observation } from './api';
 import { ListOfFeatures } from './components/listOfFeaturesDropdown';
 import { Container, Header } from '@cloudscape-design/components';
+import { DataStreamDropdown } from './components/listOfDatastreamsDropdown';
 
 function App() {
   const [features, setFeatures] = useState<Feature[]>([]);
@@ -34,7 +35,6 @@ useEffect(() => {
 
     useEffect(() => {
     if (!selectedFeature) {
-      setDatastreams([]);
       return;
     }
 
@@ -67,15 +67,22 @@ useEffect(() => {
         >
           British Geological Survey Sensors Plotter
         </Header>
-        
       }
     ></Container>
       <ListOfFeatures 
-            items={features}
-            selectedFeature={selectedFeature}
-            onSelect={setSelectedFeature}
-            loading={loadingFeatures}
-          />
+        items={features}
+        selectedFeature={selectedFeature}
+        onSelect={setSelectedFeature}
+        loading={loadingFeatures}
+      />
+      {selectedFeature && (
+        <DataStreamDropdown 
+          items={datastreams}
+          selectedDatastream={selectedDatastream}
+          onSelect={setSelectedDatastream}
+          loading={loadingDatastreams}
+        />
+      )}
     </>
   )
 }
