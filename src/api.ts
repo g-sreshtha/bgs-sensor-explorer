@@ -62,14 +62,21 @@ export async function getListOfFeatures(): Promise<Feature[]> {
 export async function getDatastreamsForFeature(featureId: number): Promise<Datastream[]> {
   const URL = `${BASE_URL}/FeaturesOfInterest(${featureId})/Observations?$select=Datastream&$expand=Datastream&$top=500`;
   const data = await getData<{ value: Array<{ Datastream: Datastream }> }>(URL);
-  
-  // Get unique datastreams (since multiple observations can have the same datastream)
   const uniqueDatastreams = new Map<number, Datastream>();
   data.value.forEach(obs => {
     if (obs.Datastream) {
       uniqueDatastreams.set(obs.Datastream['@iot.id'], obs.Datastream);
     }
   });
-  
+
   return Array.from(uniqueDatastreams.values());
+}
+
+export async function getObservationsForDatastream(
+  datastreamId: number,
+  limit: number = 1000
+): Promise<Observation[]> {
+  const URL = `${BASE_URL}/Datastreams(${datastreamId})/Observations?$top=${limit}&$orderby=phenomenonTime desc`;
+  const data = await getData<{ value: Observation[] }>(URL);
+  return data.value;
 }
